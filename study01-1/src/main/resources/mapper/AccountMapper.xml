@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="fzu.dao.AccountDao">
+<!--    需求一 -->
+    <insert id="insertAccountInfo" parameterType="fzu.pojo.Account" useGeneratedKeys="true" keyProperty="id">
+        insert into accountinfo
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="account != null">account,</if>
+            <if test="name != null">name,</if>
+            <if test="id_number != null">id_number,</if>
+            <if test="password != null">password,</if>
+            <if test="balance != null">balance,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="account != null">#{account},</if>
+            <if test="name != null">#{name},</if>
+            <if test="id_number != null">#{id_number},</if>
+            <if test="password != null">#{password},</if>
+            <if test="balance != null">#{balance},</if>
+        </trim>
+    </insert>
+    <select id="getIdNumber" resultMap="resultInfoMap">
+        SELECT id_number FROM accountinfo
+    </select>
+
+    <resultMap id="resultInfoMap" type="fzu.pojo.Account" >
+        <result property="id_number" column="id_number" />
+    </resultMap>
+
+
+
+<!--    需求二+三-->
+    <select id="selectAccountInfoById" resultType="fzu.pojo.Account">
+        select * from accountinfo where id_number = #{id_number} and password = #{password}
+    </select>
+    <insert id="insertTranInfo" parameterType="fzu.pojo.Tran">
+        insert into traninfo (accountinfo_id,pre_tran_balance,tran_amount,post_tran_balance,date,type)
+         values(#{account_info_id},#{pre_tran_balance},#{tran_amount},#{post_tran_balance},#{date},#{type})
+    </insert>
+    <update id="updateAccountInfoById" >
+        update accountinfo set balance = #{balance} where id_number = #{id_number}
+    </update>
+
+<!--    需求四-->
+
+    <select id="selectCounts" resultType="int">
+        select count(*) from accountinfo
+    </select>
+    <select id="selectAccountTran" resultMap="tran">
+        select `account`,`name`,`type`,`tran_amount`,`date` from accountinfo a,traninfo t where a.account=t.accountinfo_id and
+            t.date between #{before} and #{after}
+    </select>
+    <resultMap id="account" type="fzu.pojo.Account">
+        <id column="id" property="id"/>
+        <result column="account" property="account"/>
+        <result column="name" property="name"/>
+        <result column="id_number" property="id_number"/>
+        <result column="password" property="password"/>
+        <result column="balance" property="balance"/>
+    </resultMap>
+    <resultMap id="tran" type="fzu.pojo.TranVo">
+        <id column="id" property="id"/>
+        <result column="accountinfo_id" property="account_info_id"/>
+        <result column="pre_tran_balance" property="pre_tran_balance"/>
+        <result column="tran_amount" property="tran_amount"/>
+        <result column="post_tran_balance" property="post_tran_balance"/>
+        <result column="date" property="date"/>
+        <result column="type" property="type"/>
+        <collection property="account" resultMap="account"/>
+    </resultMap>
+</mapper>
